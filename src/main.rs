@@ -155,13 +155,11 @@ fn layout(content: Markup) -> Markup {
                     .container {
                         max-width: 672px;
                         margin: 0 auto;
-                        padding: 24px;
                     }
 
                     h1 {
                         font-size: 24px;
                         font-weight: 500;
-                        margin-bottom: 24px;
                         text-align: center;
                         color: #f3f4f6;
                     }
