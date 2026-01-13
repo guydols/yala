@@ -21,7 +21,7 @@ fn empty_state() -> Markup {
                 }
                 p .empty-text { "There is no list available" }
                 h2 .empty-title { "Create grocery list" }
-                form hx-post="/create" hx-target="body" style="max-width: 280px; width: 100%;" {
+                a href="/new" style="max-width: 280px; width: 100%;" {
                     button .btn.btn-primary type="submit" style="display: flex; align-items: center; justify-content: center; gap: 8px;" {
                         svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" {
                             path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" {}

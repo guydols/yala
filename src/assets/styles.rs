@@ -3,6 +3,7 @@ pub const CSS: &str = r#"
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    text-decoration: none;
 }
 
 body {
@@ -64,6 +65,7 @@ button:hover, .btn:hover {
 .btn-primary {
     background: #2563eb;
     color: white;
+    text-decoration: none;
 }
 
 .btn-primary:hover {
