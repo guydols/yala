@@ -11,7 +11,10 @@ pub async fn sse_handler(
     State(ctx): State<AppContext>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let rx = ctx.update_tx.subscribe();
-    let stream = BroadcastStream::new(rx).map(|_| Ok(Event::default().data("reload")));
+    let stream = BroadcastStream::new(rx).map(|result| match result {
+        Ok(data) => Ok(Event::default().data(data)),
+        Err(_) => Ok(Event::default().data("")),
+    });
 
     Sse::new(stream).keep_alive(
         axum::response::sse::KeepAlive::new()

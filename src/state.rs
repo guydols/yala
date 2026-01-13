@@ -15,7 +15,7 @@ pub type AppState = Arc<RwLock<HashMap<String, GroceryList>>>;
 #[derive(Clone)]
 pub struct AppContext {
     pub state: AppState,
-    pub update_tx: broadcast::Sender<()>,
+    pub update_tx: broadcast::Sender<String>,
 }
 
 impl AppContext {
@@ -44,7 +44,7 @@ pub async fn save_data(state: &AppState) {
     }
 }
 
-async fn watch_file(tx: broadcast::Sender<()>) {
+async fn watch_file(tx: broadcast::Sender<String>) {
     let (notify_tx, mut notify_rx) = tokio::sync::mpsc::channel(100);
 
     let mut watcher = notify::recommended_watcher(move |res: NotifyResult<notify::Event>| {
@@ -60,6 +60,6 @@ async fn watch_file(tx: broadcast::Sender<()>) {
 
     while let Some(_) = notify_rx.recv().await {
         tokio::time::sleep(Duration::from_millis(100)).await;
-        let _ = tx.send(());
+        let _ = tx.send(String::new());
     }
 }

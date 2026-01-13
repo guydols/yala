@@ -1,5 +1,10 @@
 pub const JS: &str = r#"
-// SSE connection for live updates
+const CLIENT_ID = crypto.randomUUID();
+
+document.body.addEventListener('htmx:configRequest', function(event) {
+    event.detail.headers['X-Client-Id'] = CLIENT_ID;
+});
+
 let eventSource = null;
 let reconnectAttempts = 0;
 const maxReconnectAttempts = 10;
@@ -12,22 +17,42 @@ function connectSSE() {
     eventSource = new EventSource('/events');
 
     eventSource.onmessage = function(event) {
-        if (event.data === 'reload') {
-            // Reload current view without full page refresh
-            const currentPath = window.location.pathname;
-            if (currentPath !== '/') {
+        if (!event.data || event.data === 'keep-alive') {
+            return;
+        }
+
+        try {
+            const msg = JSON.parse(event.data);
+
+            if (msg.client_id === CLIENT_ID) {
+                return;
+            }
+
+            if (msg.type === 'reload') {
+                const currentPath = window.location.pathname;
+                if (currentPath !== '/') {
+                    htmx.ajax('GET', currentPath, {
+                        target: 'body',
+                        swap: 'outerHTML'
+                    });
+                } else {
+                    htmx.ajax('GET', '/', {
+                        target: 'body',
+                        swap: 'outerHTML'
+                    });
+                }
+            }
+            reconnectAttempts = 0;
+        } catch (e) {
+            // Handle legacy 'reload' string format or parse errors
+            if (event.data === 'reload') {
+                const currentPath = window.location.pathname;
                 htmx.ajax('GET', currentPath, {
-                    target: 'body',
-                    swap: 'outerHTML'
-                });
-            } else {
-                htmx.ajax('GET', '/', {
                     target: 'body',
                     swap: 'outerHTML'
                 });
             }
         }
-        reconnectAttempts = 0;
     };
 
     eventSource.onerror = function() {
@@ -39,10 +64,8 @@ function connectSSE() {
     };
 }
 
-// Handle page visibility
 document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
-        // Page became visible - reconnect SSE and check for updates
         connectSSE();
         const currentPath = window.location.pathname;
         htmx.ajax('GET', currentPath, {
@@ -50,14 +73,12 @@ document.addEventListener('visibilitychange', function() {
             swap: 'outerHTML'
         });
     } else {
-        // Page hidden - close SSE to save resources
         if (eventSource) {
             eventSource.close();
         }
     }
 });
 
-// Initial connection
 connectSSE();
 
 window.handleCheckboxClick = function(event, listId, idx) {
@@ -176,9 +197,7 @@ window.handleDeleteCompleted = function(listId) {
     var completedItems = document.querySelectorAll('.item.completed');
     document.getElementById('menu').style.display = 'none';
 
-    // Always make the server request to delete ALL completed items (visible and hidden)
     if (completedItems.length === 0) {
-        // No visible items to animate, just make the request directly
         htmx.ajax('POST', '/list/' + listId + '/delete-completed', {
             target: 'body',
             swap: 'outerHTML'
@@ -186,7 +205,6 @@ window.handleDeleteCompleted = function(listId) {
         return;
     }
 
-    // Animate visible completed items out, then make request
     anime({
         targets: completedItems,
         opacity: 0,
@@ -263,21 +281,15 @@ function initializeSwipes() {
 
 document.body.addEventListener('htmx:afterSwap', function(e) {
     var input = document.getElementById('add-input');
-
-    // Only focus if the swap was triggered by the add item form or initial page load
-    // Check if the detail contains the triggering element info
     var shouldFocus = false;
 
-    // Check if it was triggered by the add form submission
     if (e.detail && e.detail.target) {
         var targetPath = e.detail.pathInfo ? e.detail.pathInfo.requestPath : '';
         var xhr = e.detail.xhr;
 
-        // Focus only if it was an add action or first load
         if (targetPath && targetPath.includes('/add')) {
             shouldFocus = true;
         } else if (!targetPath) {
-            // Initial page load - focus on first visit
             shouldFocus = true;
         }
     }
@@ -292,7 +304,6 @@ document.body.addEventListener('htmx:afterSwap', function(e) {
 document.addEventListener('DOMContentLoaded', function() {
     initializeSwipes();
 
-    // Focus input on initial page load
     var input = document.getElementById('add-input');
     if (input) {
         input.focus();

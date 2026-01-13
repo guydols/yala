@@ -4,6 +4,7 @@ use crate::templates::{home as home_tpl, layout};
 use axum::{
     Form,
     extract::State,
+    http::HeaderMap,
     response::{Html, IntoResponse},
 };
 
@@ -26,6 +27,7 @@ async fn lists_view(State(ctx): State<AppContext>) -> Html<String> {
 
 pub async fn create_list(
     State(ctx): State<AppContext>,
+    headers: HeaderMap,
     Form(form): Form<CreateForm>,
 ) -> impl IntoResponse {
     let id = form.name.to_lowercase().replace(" ", "-");
@@ -37,6 +39,18 @@ pub async fn create_list(
 
     ctx.state.write().unwrap().insert(id.clone(), list);
     save_data(&ctx.state).await;
+
+    let client_id = headers
+        .get("X-Client-Id")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .to_string();
+
+    let event = serde_json::json!({
+        "type": "reload",
+        "client_id": client_id
+    });
+    let _ = ctx.update_tx.send(event.to_string());
 
     lists_view(State(ctx)).await
 }
