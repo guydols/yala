@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  yala:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: yala:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
