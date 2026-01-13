@@ -6,6 +6,7 @@ mod templates;
 
 use axum::{
     Router,
+    response::IntoResponse,
     routing::{get, post},
 };
 use handlers::{home, list, sse};
@@ -37,9 +38,15 @@ async fn main() {
         .route("/list/:id/sort", post(list::sort_list))
         .route("/list/:id/delete", post(list::delete_list))
         .route("/events", get(sse::sse_handler))
+        .route("/favicon.ico", get(favicon_handler))
         .with_state(ctx);
 
     let listener = tokio::net::TcpListener::bind(BIND).await.unwrap();
     println!("Server running on http://{}", BIND);
     axum::serve(listener, app).await.unwrap();
+}
+
+async fn favicon_handler() -> impl IntoResponse {
+    let bytes = include_bytes!("./assets/favicon.ico");
+    ([("content-type", "image/x-icon")], bytes.as_slice())
 }
