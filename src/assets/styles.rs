@@ -26,6 +26,11 @@ h1 {
     color: #f3f4f6;
 }
 
+.toptitle {
+    padding-top: 16px;
+    padding-bottom: 16px;
+}
+
 input[type="text"] {
     width: 100%;
     padding: 16px;
