@@ -4,9 +4,11 @@ A tiny, mobile-first shared list application.
 
 yala is a simple, single global list app with a mobile-focused UI. It stores the list as JSON, hides completed items when requested, and automatically syncs between connected clients. There are no user accounts and no built-in security — everyone shares the same global list.
 
-![Empty list screenshot](doc/img/empty.png)
-![Lists screenshot](doc/img/lists.png)
-![Items screenshot](doc/img/items.png)
+<p align="center">
+  <img src="doc/img/empty.png" alt="Empty list screenshot" width="30%" />
+  <img src="doc/img/lists.png" alt="Lists screenshot" width="30%" />
+  <img src="doc/img/items.png" alt="Items screenshot" width="30%" />
+</p>
 
 ## Application
 - Mobile-first UI designed for quick entry and fast interaction on phones.
